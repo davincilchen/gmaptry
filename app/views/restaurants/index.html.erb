@@ -21,6 +21,17 @@
     </style>
   </head>
   <body>
+    <h1><%= @trip.name%></h1>
+    <div>
+      <%= image_tag @trip.image, width: '240px' if @trip.image? %>
+    </div>
+    <% @trip.sites.each do |site|%>
+      <div><%= site.name %></div>
+      <div>
+        <%= image_tag site.photo, width: '120px' if site.photo? %>
+      </div>
+    <%end%>
+
     <div id="map"></div>
     <script>
       var map;
