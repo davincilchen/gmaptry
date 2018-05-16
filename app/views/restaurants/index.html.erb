@@ -25,11 +25,32 @@
 
   <div id="map"></div>
   <script>
-    var map;
-    function initMap() {
+    var map = null;
+    var gostationMarkers = [];
+    var siteMarkers = [];
+    var friendlyStoreMarkers = [];
+    var currentPositionMarker = null;
+    var destinationMarker = null;
+    var directionsService = null;
+    var directionsDisplay = null;
+
+    // map icons
+    var i_green_black_battery = null;
+    var i_green_black_battery_sm = null;
+    var ig_green_black_battery = null;
+    var i_blue_black_battery = null;
+    var ig_blue_black_battery = null;
+    var i_site = null;
+    var i_site_sm = null;
+    var ig_site = null;
+    var friendly_store_icon = null;
+    var friendly_store_icon_onclick = null;
+
+    function initMapX() {
+
       map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: 24.98367, lng: 121.453586},
-        zoom: 15
+        zoom: 15, 
+        center: {lat: 24.98367, lng: 121.453586}
       });
 
       var myLatLng = {lat: 24.98367, lng: 121.453586};
@@ -40,6 +61,107 @@
       });
       // To add the marker to the map, call setMap();
       marker.setMap(map);
+    }
+
+
+    function initMap() {
+      directionsService = new google.maps.DirectionsService;
+      directionsDisplay = new google.maps.DirectionsRenderer;
+      map = new google.maps.Map(document.getElementById('map'), {
+        //zoom: 10,
+        zoom: 15,
+        //center: calculateGostationCenter(),
+        center: {lat: 24.98367, lng: 121.453586},
+        styles: googleMapStyle,
+        // specify map controls
+        minZoom: 8,
+        maxZoom: 16,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        streetViewControl: false,
+        zoomControl: false
+      });
+
+      // dynamic calculate zoom level
+      var zoomLevel = getBoundsZoomLevel(350, 250);
+      map.setZoom(zoomLevel);
+
+      i_green_black_battery = {
+        url: "../icons/i_green_black_battery.png",
+        scaledSize: new google.maps.Size(28, 32)
+      };
+
+      i_green_black_battery_sm = {
+        url: "../icons/i_green_black_battery.png",
+        scaledSize: new google.maps.Size(14, 16)
+      };
+
+      ig_green_black_battery = {
+        url: "../icons/ig_green_black_battery.png",
+        scaledSize: new google.maps.Size(42, 48)
+      };
+
+      i_blue_black_battery = {
+        url: "../icons/i_blue_black_battery.png",
+        scaledSize: new google.maps.Size(28, 32)
+      };
+
+      ig_blue_black_battery = {
+        url: "../icons/ig_blue_black_battery.png",
+        scaledSize: new google.maps.Size(42, 48)
+      };
+
+      friendly_store_icon = {
+        url: "../icons/Shop.png",
+        scaledSize: new google.maps.Size(28, 32)
+      };
+
+      friendly_store_icon_onclick = {
+        url: "../icons/Shop.png",
+        scaledSize: new google.maps.Size(35, 40)
+      };
+
+      i_site = {
+        url: "../icons/i_site.png",
+        scaledSize: new google.maps.Size(28, 36)
+      };
+
+      i_site_sm = {
+        url: "../icons/i_site.png",
+        scaledSize: new google.maps.Size(14, 18)
+      };
+
+      ig_site = {
+        url: "../icons/ig_site.png",
+        scaledSize: new google.maps.Size(35, 45)
+      };
+
+      directionsDisplay.setMap(map);
+
+      // Create the DIV to hold the control and call the FriendlyStoreControl()
+      // constructor passing in this DIV.
+      var friendlyStoreDiv = document.createElement('div');
+      var friendlyStoreControl = new tripFriendlyStoreControl(friendlyStoreDiv, map);
+
+      friendlyStoreDiv.index = 1;
+      map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(friendlyStoreDiv);
+
+
+      // Create the DIV to hold the control and call the GostationSiteControl()
+      // constructor passing in this DIV.
+      var gostationSiteDiv = document.createElement('div');
+      var gostationSiteControl = new GostationSiteControl(gostationSiteDiv, map);
+
+      gostationSiteDiv.index = 2;
+      map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(gostationSiteDiv);
+
+
+      // find current position of user
+      trip_show_getCurrentPosition();
+
+      displaySites();
+      setMarkersIcon(siteMarkers, i_site_sm);
+      displayGostations();
     }
   </script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDBlueY1pKWgE_uhgFbjH8_cO2CjJCERaA&callback=initMap"
