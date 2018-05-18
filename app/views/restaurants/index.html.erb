@@ -46,6 +46,80 @@
     var friendly_store_icon = null;
     var friendly_store_icon_onclick = null;
 
+    function displayGostations(route) {
+      console.log("**displayGostations**");
+      return; //xxxxx
+      // --- create milestones
+      var milestones = createMilestone(route, 1000);
+
+      setMarkerInfo({
+        gostations: gon.gostations,
+        milestones: milestones
+      });
+    };
+
+    function displaySites(){
+      console.log("**displaySites**");
+      return; //xxxxx
+
+      if(siteMarkers.length>0){ return; }
+
+      for(var i=0; i<gon.gostation_sites.length; i++){
+        var position = {
+          lat: +gon.gostation_sites[i].latitude,
+          lng: +gon.gostation_sites[i].longitude
+        };
+
+        var info = {
+
+          title: gon.gostation_sites[i].name,
+          content: gon.gostation_sites[i].description,
+          storePhoto: "../images/"+gon.gostation_sites[i].photo,
+          totalBatteryCells: 0
+        }
+        info.position = position;
+        info.directions_url = getDirectionUrl(position.lat+','+position.lng);
+        info.id = markerType.SITE;
+        info.iconImage = i_site;
+
+        addMarker(info);
+      }
+    }
+
+
+    function getBoundsZoomLevel(mapWidth, mapHeight) {
+      console.log("**getBoundsZoomLevel**");
+      //if(gon.gostations.length <= 0){ return 8; }
+      if(1){ return 15; }
+
+      var bounds = calculateGostationBounds();
+      var WORLD_DIM = { height: 256, width: 256 };
+      var ZOOM_MAX = 21;
+
+      function latRad(lat) {
+          var sin = Math.sin(lat * Math.PI / 180);
+          var radX2 = Math.log((1 + sin) / (1 - sin)) / 2;
+          return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2;
+      }
+
+      function zoom(mapPx, worldPx, fraction) {
+          return Math.floor(Math.log(mapPx / worldPx / fraction) / Math.LN2);
+      }
+
+      var ne = bounds.ne;
+      var sw = bounds.sw;
+
+      var latFraction = (latRad(ne.lat) - latRad(sw.lat)) / Math.PI;
+
+      var lngDiff = ne.lng - sw.lng;
+      var lngFraction = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
+
+      var latZoom = zoom(mapHeight, WORLD_DIM.height, latFraction);
+      var lngZoom = zoom(mapWidth, WORLD_DIM.width, lngFraction);
+
+      return Math.min(latZoom, lngZoom, ZOOM_MAX);
+    }
+
     function initMapX() {
 
       map = new google.maps.Map(document.getElementById('map'), {
