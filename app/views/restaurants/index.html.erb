@@ -56,19 +56,20 @@
       console.log("addMarker ----------------- 1")
       console.log(props)
       console.log("addMarker ----------------- 2")
+
       var marker = new google.maps.Marker({
         position: props.position,
         animation: google.maps.Animation.DROP,
         map: map,
-        icon: props.iconImage
+        //icon: props.iconImage  //icon url failed //20180518
       });
 
+      return;  // //icon url failed //20180518
       if(props.id == markerType.SITE){
         marker.infowindow = new google.maps.InfoWindow({
           content: props.title
         });
       }
-
       if(props.directions_url){
         marker.addListener('click', function(){
           // --- switch marker icon
@@ -311,9 +312,9 @@
       directionsDisplay = new google.maps.DirectionsRenderer;
       map = new google.maps.Map(document.getElementById('map'), {
         //zoom: 10,
-        zoom: 15,
+        zoom: 12,
         //center: calculateGostationCenter(),
-        center: {lat: 24.98367, lng: 121.453586},
+        center: {lat: 25.0452426, lng: 121.55025},
         styles: googleMapStyle,
         // specify map controls
         minZoom: 8,
@@ -325,8 +326,8 @@
       });
 
       // dynamic calculate zoom level
-      var zoomLevel = getBoundsZoomLevel(350, 250);
-      map.setZoom(zoomLevel);
+      //var zoomLevel = getBoundsZoomLevel(350, 250);
+      //map.setZoom(zoomLevel);
 
       i_green_black_battery = {
         url: "../icons/i_green_black_battery.png",
