@@ -64,11 +64,16 @@
         //icon: props.iconImage  //icon url failed //20180518
       });
 
-      return;  // //icon url failed //20180518
+
       if(props.id == markerType.SITE){
         marker.infowindow = new google.maps.InfoWindow({
           content: props.title
         });
+      }
+
+      if(1){ //icon url failed, but add masker //20180518
+        siteMarkers.push(marker);
+        return;  //icon url failed //20180518
       }
       if(props.directions_url){
         marker.addListener('click', function(){
@@ -405,6 +410,10 @@
       displaySites();
       setMarkersIcon(siteMarkers, i_site_sm);
       displayGostations();
+
+      console.log("siteMarkers ------------");
+      console.log(siteMarkers);
+      openMarkersInfowindow(siteMarkers);//add 20180518 for showing site name
     }
   </script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDBlueY1pKWgE_uhgFbjH8_cO2CjJCERaA&callback=initMap"
