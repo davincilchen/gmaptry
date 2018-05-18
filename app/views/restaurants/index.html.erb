@@ -10,6 +10,7 @@
   </style>
 </head>
 <body>
+  <%= Gon::Base.render_data %>
   <h1><%= @trip.name%></h1>
   <div>
     <%= image_tag @trip.image, width: '240px' if @trip.image? %>
@@ -224,7 +225,7 @@
 
     function displaySites(){
       console.log("**displaySites**");
-      return; //xxxxx
+      //return; //xxxxx
 
       if(siteMarkers.length>0){ return; }
 
