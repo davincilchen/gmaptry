@@ -453,7 +453,7 @@ function tripFriendlyStoreControl(controlDiv, map) {
 
 var toggleGostationSite = false;
 function GostationSiteControl(controlDiv, map) {
-
+  console.log("GostationSiteControl ---- 01 do")
   // Set CSS for the control border.
   var controlUI = document.createElement('div');
   controlUI.style.backgroundColor = before_toggle_bg;
@@ -477,8 +477,10 @@ function GostationSiteControl(controlDiv, map) {
   controlText.innerHTML = '推薦景點';
   controlUI.appendChild(controlText);
 
+  console.log("GostationSiteControl ---- 02 do")
   // Setup the click event listeners: simply set the map to Chicago.
   controlUI.addEventListener('click', function() {
+    console.log("推薦景點 ---- 01 do")
     displayGostations();
     displaySites();
     toggleGostationSite = !toggleGostationSite;

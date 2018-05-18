@@ -46,6 +46,170 @@
     var friendly_store_icon = null;
     var friendly_store_icon_onclick = null;
 
+    var activeMarkerInfo = {
+      marker: null,
+      bFriendlyStore: false,
+      bGostationSite: false
+    };
+    function addMarker(props){
+      console.log("addMarker ----------------- 1")
+      console.log(props)
+      console.log("addMarker ----------------- 2")
+      var marker = new google.maps.Marker({
+        position: props.position,
+        animation: google.maps.Animation.DROP,
+        map: map,
+        icon: props.iconImage
+      });
+
+      if(props.id == markerType.SITE){
+        marker.infowindow = new google.maps.InfoWindow({
+          content: props.title
+        });
+      }
+
+      if(props.directions_url){
+        marker.addListener('click', function(){
+          // --- switch marker icon
+          if(props.id>=0 || props.id==markerType.FRIENDLY_STORE || props.id==markerType.SITE){
+            if(activeMarkerInfo.marker!=null){
+              if(activeMarkerInfo.bFriendlyStore){
+                activeMarkerInfo.marker.setIcon(friendly_store_icon);
+              }
+              else if(activeMarkerInfo.bGostationSite){
+                if(toggleGostationSite){
+                  activeMarkerInfo.marker.setIcon(i_site);
+                }
+                else{
+                  activeMarkerInfo.marker.setIcon(i_site_sm);
+                }
+              }
+              else{
+                if(toggleGostationSite){
+                  activeMarkerInfo.marker.setIcon(i_green_black_battery_sm);
+                }
+                else{
+                  activeMarkerInfo.marker.setIcon(i_green_black_battery);
+                }
+              }
+            }
+          }
+
+          if(props.id >= 0){//gostations
+            if(toggleGostationSite){
+              marker.setIcon(i_green_black_battery_sm);
+            }
+            else{
+              marker.setIcon(ig_green_black_battery);
+            }
+            activeMarkerInfo.marker = marker;
+            activeMarkerInfo.bFriendlyStore = false;
+            activeMarkerInfo.bGostationSite = false;
+
+            // get id of trip_gostation
+            currentTripGostationId = -1;
+            for(var i=0; i<gon.trip_gostations.length; i++){
+              if(props.id==gon.trip_gostations[i].gostation_id){
+                currentTripGostationId = gon.trip_gostations[i].id;
+              }
+            }
+
+            var bCloseGostation = false;
+            if( checkLatLngNearby(userCurrentPos, props.position, 0.005) ){//0.005 = 500m
+              bCloseGostation = true;
+            }
+            bCloseGostation = true;//for debug
+
+            var disDurPromise = promiseCalculateDisDur(props.position);
+
+            disDurPromise
+            .then(function(results) {
+              $.ajaxSetup({
+                headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') }
+              });
+              $.ajax({
+                url: "/trip_gostations/"+currentTripGostationId+"/getCheckinStatus",
+                method: "POST",
+                dataType: "json",
+                success: function(data){
+                  props.distance = results.distance;
+                  props.duration = results.duration;
+                  props.bCheckin = data.status;
+                  props.bCloseGostation = bCloseGostation;
+                  setMarkerModalInfo(props);
+                  $('#tripModalCenter').modal();
+                },
+
+                error: function() {
+                  alert("ERROR: can not getCheckinStatus!");
+                }
+
+              });
+            })
+            .catch(function(err) {
+              console.log("Can not get disDur");
+            });
+          }
+          else if(props.id == markerType.FRIENDLY_STORE || props.id == markerType.SITE){//friendly stores
+
+            if(props.id == markerType.FRIENDLY_STORE){
+              marker.setIcon(friendly_store_icon_onclick);
+              activeMarkerInfo.bFriendlyStore = true;
+              activeMarkerInfo.bGostationSite = false;
+            }
+            else if(props.id == markerType.SITE){
+              if(toggleGostationSite){
+                marker.setIcon(ig_site);
+              }
+              else{
+                marker.setIcon(i_site_sm);
+              }
+              activeMarkerInfo.bFriendlyStore = false;
+              activeMarkerInfo.bGostationSite = true;
+            }
+            activeMarkerInfo.marker = marker;
+
+            var disDurPromise = promiseCalculateDisDur(props.position);
+            disDurPromise
+            .then(function(results) {
+              props.distance = results.distance;
+              props.duration = results.duration;
+              if(props.id == markerType.FRIENDLY_STORE){
+                setMarkerModalInfo(props);
+                $('#tripModalCenter').modal();
+              }
+              else{
+                setSiteMarkerModalInfo(props);
+                $('#siteModalCenter').modal();
+              }
+
+            })
+            .catch(function(err) {
+              console.log("Can not get disDur");
+            });
+          }
+
+        });
+      }
+      
+      if(props.id >= 0){//gostations
+        gostationMarkers.push(marker);
+      }
+      else if(props.id == markerType.FRIENDLY_STORE){//friendly stores
+        friendlyStoreMarkers.push(marker);
+      }
+      else if(props.id == markerType.DESTINATION){
+        destinationMarker = marker;
+      }
+      else if(props.id == markerType.CURRENT_LOCATION){
+        currentPositionMarker = marker;
+      }
+      else if(props.id == markerType.SITE){
+        siteMarkers.push(marker);
+      }
+      
+    }
+
     function displayGostations(route) {
       console.log("**displayGostations**");
       return; //xxxxx
@@ -82,6 +246,9 @@
         info.id = markerType.SITE;
         info.iconImage = i_site;
 
+        console.log("displaySites ----------------- 1")
+        console.log(info)
+        console.log("displaySites ----------------- 2")
         addMarker(info);
       }
     }
